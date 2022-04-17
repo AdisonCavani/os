@@ -1,10 +1,11 @@
 
 #include "BasicRenderer.h"
 #include "Bitmap.h"
-#include "PageFrameAllocator.h"
 #include "cstr.h"
 #include "efiMemory.h"
 #include "memory.h"
+#include "paging/PageFrameAllocator.h"
+#include "paging/PageMapIndexer.h"
 #include <stdint.h>
 
 struct BootInfo {
@@ -33,27 +34,15 @@ _start(BootInfo *bootInfo) {
 
     newAllocator.LockPages(&_KernelStart, kernelPages);
 
-    newRenderer.CursorPosition = {0, 0};
-    newRenderer.Print("Free RAM: ");
-    newRenderer.Print(to_string(newAllocator.GetFreeRAM() / 1024));
-    newRenderer.Print(" KB ");
-    newRenderer.CursorPosition = {0, newRenderer.CursorPosition.Y + 16};
+    PageMapIndexer pageIndexer = PageMapIndexer(0x1000 * 52 + 0x50000 * 7);
 
-    newRenderer.Print("Used RAM: ");
-    newRenderer.Print(to_string(newAllocator.GetUsedRAM() / 1024));
-    newRenderer.Print(" KB ");
-    newRenderer.CursorPosition = {0, newRenderer.CursorPosition.Y + 16};
-
-    newRenderer.Print("Reserved RAM: ");
-    newRenderer.Print(to_string(newAllocator.GetReservedRAM() / 1024));
-    newRenderer.Print(" KB ");
-    newRenderer.CursorPosition = {0, newRenderer.CursorPosition.Y + 16};
-
-    for (int t = 0; t < 20; t++) {
-        void *address = newAllocator.RequestPage();
-        newRenderer.Print(to_hstring((uint64_t)address));
-        newRenderer.CursorPosition = {0, newRenderer.CursorPosition.Y + 16};
-    }
+    newRenderer.Print(to_string(pageIndexer.P_i));
+    newRenderer.Print(" - ");
+    newRenderer.Print(to_string(pageIndexer.PT_i));
+    newRenderer.Print(" - ");
+    newRenderer.Print(to_string(pageIndexer.PD_i));
+    newRenderer.Print(" - ");
+    newRenderer.Print(to_string(pageIndexer.PDP_i));
 
     return;
 }
