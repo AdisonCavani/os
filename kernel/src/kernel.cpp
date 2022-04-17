@@ -1,7 +1,7 @@
 
 #include "BasicRenderer.h"
-#include "Cstr.h"
-#include "EfiMemory.h"
+#include "cstr.h"
+#include "efiMemory.h"
 #include <stdint.h>
 
 struct BootInfo {
@@ -35,11 +35,11 @@ extern "C" void _start(BootInfo *bootInfo) {
         EFI_MEMORY_DESCRIPTOR *desc = (EFI_MEMORY_DESCRIPTOR *)((uint64_t)bootInfo->mMap + (i * bootInfo->mMapDescSize));
         newRenderer.CursorPosition = {0, newRenderer.CursorPosition.Y + 16};
         newRenderer.Print(EFI_MEMORY_TYPE_STRINGS[desc->type]);
-        newRenderer.Color = 0xffff00ff;
+        newRenderer.Colour = 0xffff00ff;
         newRenderer.Print(" ");
         newRenderer.Print(to_string(desc->numPages * 4096 / 1024));
         newRenderer.Print(" KB");
-        newRenderer.Color = 0xffffffff;
+        newRenderer.Colour = 0xffffffff;
     }
 
     return;
