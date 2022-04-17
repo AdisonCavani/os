@@ -1,7 +1,8 @@
 #include <efi.h>
 #include <efilib.h>
 #include <elf.h>
-#include <stddef.h>
+
+typedef unsigned long long size_t;
 
 typedef struct {
     void *BaseAddress;
@@ -26,14 +27,12 @@ typedef struct {
 } PSF1_FONT;
 
 Framebuffer framebuffer;
-
 Framebuffer *InitializeGOP() {
     EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
     EFI_STATUS status;
 
     status = uefi_call_wrapper(BS->LocateProtocol, 3, &gopGuid, NULL, (void **)&gop);
-
     if (EFI_ERROR(status)) {
         Print(L"Unable to locate GOP\n\r");
         return NULL;
@@ -72,7 +71,6 @@ EFI_FILE *LoadFile(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandle, EF
 
 PSF1_FONT *LoadPSF1Font(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     EFI_FILE *font = LoadFile(Directory, Path, ImageHandle, SystemTable);
-
     if (font == NULL)
         return NULL;
 
@@ -81,13 +79,12 @@ PSF1_FONT *LoadPSF1Font(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandl
     UINTN size = sizeof(PSF1_HEADER);
     font->Read(font, &size, fontHeader);
 
-    if (fontHeader->magic[0] != PSF1_MAGIC0 || fontHeader->magic[1] != PSF1_MAGIC1)
+    if (fontHeader->magic[0] != PSF1_MAGIC0 || fontHeader->magic[1] != PSF1_MAGIC1) {
         return NULL;
+    }
 
     UINTN glyphBufferSize = fontHeader->charsize * 256;
-
-    // 512 glyph mode
-    if (fontHeader->mode == 1) {
+    if (fontHeader->mode == 1) { // 512 glyph mode
         glyphBufferSize = fontHeader->charsize * 512;
     }
 
@@ -102,7 +99,6 @@ PSF1_FONT *LoadPSF1Font(EFI_FILE *Directory, CHAR16 *Path, EFI_HANDLE ImageHandl
     SystemTable->BootServices->AllocatePool(EfiLoaderData, sizeof(PSF1_FONT), (void **)&finishedFont);
     finishedFont->psf1_Header = fontHeader;
     finishedFont->glyphBuffer = glyphBuffer;
-
     return finishedFont;
 }
 
@@ -184,18 +180,14 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
     PSF1_FONT *newFont = LoadPSF1Font(NULL, L"zap-vga16.psf", ImageHandle, SystemTable);
     if (newFont == NULL) {
-        Print(L"Font is not valid or it's not found\n\r");
+        Print(L"Font is not valid or is not found\n\r");
     } else {
-        Print(L"Font found. Char size = %d\n\r", newFont->psf1_Header->charsize);
+        Print(L"Font found. char size = %d\n\r", newFont->psf1_Header->charsize);
     }
 
     Framebuffer *newBuffer = InitializeGOP();
 
-    Print(L"Base Address: 0x%x\r\n"
-          L"Buffer Size: 0x%x\r\n"
-          L"Width: %d \r\n"
-          L"Height: %d \r\n"
-          L"PixelsPerScanline: %d \r\n",
+    Print(L"Base: 0x%x\n\rSize: 0x%x\n\rWidth: %d\n\rHeight: %d\n\rPixelsPerScanline: %d\n\r",
           newBuffer->BaseAddress,
           newBuffer->BufferSize,
           newBuffer->Width,
