@@ -1,7 +1,7 @@
 #pragma once
 #include "Framebuffer.h"
+#include "Math.h"
 #include "SimpleFont.h"
-#include "math.h"
 
 class BasicRenderer {
 public:
@@ -9,7 +9,7 @@ public:
     Point CursorPosition;
     Framebuffer *TargetFramebuffer;
     PSF1_FONT *PSF1_Font;
-    unsigned int Colour;
+    unsigned int Color;
     void Print(const char *str);
     void PutChar(char chr, unsigned int xOff, unsigned int yOff);
 };

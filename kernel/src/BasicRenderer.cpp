@@ -3,7 +3,7 @@
 BasicRenderer::BasicRenderer(Framebuffer *targetFramebuffer, PSF1_FONT *psf1_Font) {
     TargetFramebuffer = targetFramebuffer;
     PSF1_Font = psf1_Font;
-    Colour = 0xffffffff;
+    Color = 0xffffffff;
     CursorPosition = {0, 0};
 }
 
@@ -27,7 +27,7 @@ void BasicRenderer::PutChar(char chr, unsigned int xOff, unsigned int yOff) {
     for (unsigned long y = yOff; y < yOff + 16; y++) {
         for (unsigned long x = xOff; x < xOff + 8; x++) {
             if ((*fontPtr & (0b10000000 >> (x - xOff))) > 0) {
-                *(unsigned int *)(pixPtr + x + (y * TargetFramebuffer->PixelsPerScanLine)) = Colour;
+                *(unsigned int *)(pixPtr + x + (y * TargetFramebuffer->PixelsPerScanLine)) = Color;
             }
         }
         fontPtr++;
