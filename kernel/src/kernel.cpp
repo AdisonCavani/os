@@ -2,12 +2,13 @@
 #include "BasicRenderer.h"
 #include "cstr.h"
 #include "efiMemory.h"
+#include "memory.h"
 #include <stdint.h>
 
 struct BootInfo {
     Framebuffer *framebuffer;
     PSF1_FONT *psf1_Font;
-    void *mMap;
+    EFI_MEMORY_DESCRIPTOR *mMap;
     uint64_t mMapSize;
     uint64_t mMapDescSize;
 };
@@ -41,6 +42,9 @@ extern "C" void _start(BootInfo *bootInfo) {
         newRenderer.Print(" KB");
         newRenderer.Colour = 0xffffffff;
     }
+
+    newRenderer.CursorPosition = {1000, 500};
+    newRenderer.Print(to_string(GetMemorySize(bootInfo->mMap, mMapEntries, bootInfo->mMapDescSize)));
 
     return;
 }
